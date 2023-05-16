@@ -3,7 +3,15 @@ body{
     min-height: 100vh;
 }
 
-
+.w3a-header__logo > img {
+  width: 100px !important;
+}
+.w3ajs-social-logins{
+  display: none;
+}
+.w3ajs-external-wallet{
+  display: none;
+}
 .btn {
   background-image: linear-gradient(-180deg, #37AEE2 0%, #1E96C8 100%);
   border-radius: .5rem;
