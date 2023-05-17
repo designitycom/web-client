@@ -22,6 +22,8 @@ function Home() {
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
   );
+  const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState<string>("");
   useEffect(() => {
     const init = async () => {
       try {
@@ -196,19 +198,28 @@ function Home() {
     // const parsedToken = JSON.parse(window.atob(base64!))
     // console.log(base64Url);
   }
-  const saveFile=(e:React.ChangeEvent<HTMLInputElement>)=>{
-   setFile(e.target.files![0]);
-   setNameFile(e.target.files![0].name);
-   console.log(e.target.files![0].name);
+  const saveFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(e.target.files![0]);
+    setNameFile(e.target.files![0].name);
+    console.log(e.target.files![0].name);
   }
-  const mint=async()=> {
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value)
+  }
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value)
+  }
+
+  const mint = async () => {
     const user = await getInfo();
     const rpc = new RPC(provider!);
     const privateKey = await rpc.getPrivateKey();
-  const api=new Api();
-  console.log(privateKey);
-  await api.callMint(user?.idToken!,privateKey,file!,fileName);
+    const api = new Api();
+    console.log(privateKey);
+    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name);
   }
+
   const unloggedInView = (
 
     <Button label={"Login"} handleClick={() => { console.log('bbb'); login() }} />
@@ -221,8 +232,12 @@ function Home() {
       <Button label={"LogOut"} handleClick={() => { logout() }} />
       <Button label={"Check Token"} handleClick={() => { checkToken() }} />
       <Button label={"Puplic Key"} handleClick={() => { getPublicKey() }} />
-      <input type="file" onChange={saveFile}/>
-      <Button label="mint" handleClick={()=>{mint()}}/>
+      <input type="file" onChange={saveFile} />
+      <label>Description</label>
+      <input type="text" onChange={handleDescriptionChange} />
+      <label>Name</label>
+      <input type="text" onChange={handleNameChange} />
+      <Button label="mint" handleClick={() => { mint() }} />
     </div>
   );
   return (
