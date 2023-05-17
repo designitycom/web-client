@@ -3,7 +3,7 @@ import Button from "../../components/Button";
 import '../../assets/css/main.css';
 import { Web3Auth } from "@web3auth/modal";
 import { CHAIN_NAMESPACES, SafeEventEmitterProvider, WALLET_ADAPTERS } from "@web3auth/base";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SolflareAdapter } from "@web3auth/solflare-adapter";
 import { SlopeAdapter } from "@web3auth/slope-adapter";
 import { SolanaWalletConnectorPlugin } from "@web3auth/solana-wallet-connector-plugin";
@@ -16,6 +16,8 @@ const clientId =
 
 function Home() {
 
+  const [file, setFile] = useState<File>();
+  const [fileName, setNameFile] = useState<string>("");
   const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
@@ -194,6 +196,19 @@ function Home() {
     // const parsedToken = JSON.parse(window.atob(base64!))
     // console.log(base64Url);
   }
+  const saveFile=(e:React.ChangeEvent<HTMLInputElement>)=>{
+   setFile(e.target.files![0]);
+   setNameFile(e.target.files![0].name);
+   console.log(e.target.files![0].name);
+  }
+  const mint=async()=> {
+    const user = await getInfo();
+    const rpc = new RPC(provider!);
+    const privateKey = await rpc.getPrivateKey();
+  const api=new Api();
+  console.log(privateKey);
+  await api.callMint(user?.idToken!,privateKey,file!,fileName);
+  }
   const unloggedInView = (
 
     <Button label={"Login"} handleClick={() => { console.log('bbb'); login() }} />
@@ -206,6 +221,8 @@ function Home() {
       <Button label={"LogOut"} handleClick={() => { logout() }} />
       <Button label={"Check Token"} handleClick={() => { checkToken() }} />
       <Button label={"Puplic Key"} handleClick={() => { getPublicKey() }} />
+      <input type="file" onChange={saveFile}/>
+      <Button label="mint" handleClick={()=>{mint()}}/>
     </div>
   );
   return (
