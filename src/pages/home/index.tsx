@@ -17,7 +17,9 @@ const clientId =
 function Home() {
 
   const [file, setFile] = useState<File>();
+  const [uri, setUri] = useState<string>("");
   const [fileName, setNameFile] = useState<string>("");
+  const [explorerUri, setExplorerUri] = useState<string>("");
   const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
   const [provider, setProvider] = useState<SafeEventEmitterProvider | null>(
     null
@@ -217,9 +219,14 @@ function Home() {
     const privateKey = await rpc.getPrivateKey();
     const api = new Api();
     console.log(privateKey);
-    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name);
+    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name,successMint);
   }
 
+  const successMint=async(data:any)=>{
+    console.log("success",data.data);
+    setExplorerUri(data.data.explorer_uri);
+    setUri(data.data.nft.json.image)
+  }
   const unloggedInView = (
 
     <Button label={"Login"} handleClick={() => { console.log('bbb'); login() }} />
@@ -238,6 +245,8 @@ function Home() {
       <label>Name</label>
       <input type="text" onChange={handleNameChange} />
       <Button label="mint" handleClick={() => { mint() }} />
+      <p>{explorerUri}</p>
+      <img src={uri}/>
     </div>
   );
   return (

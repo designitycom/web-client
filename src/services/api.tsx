@@ -25,7 +25,7 @@ export default class Api {
     }
     
     
-    callMint = async (idToken:string,privateKey:string,file:File,fileName:string, description:string, name:string): Promise<string[]> => {
+    callMint = async (idToken:string,privateKey:string,file:File,fileName:string, description:string, name:string,callBack:(data:JSON)=>{}): Promise<string[]> => {
       console.log("start check login:"+idToken);
       const formData=new FormData();
       formData.append("file",file);
@@ -40,7 +40,8 @@ export default class Api {
         })
            .then((response) => response.json())
            .then((data) => {
-              console.log(data);
+              console.log(data.explorer_uri);
+              callBack(data);
               // Handle data
            })
            .catch((err) => {
