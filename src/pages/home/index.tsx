@@ -18,6 +18,7 @@ function Home() {
 
   const [file, setFile] = useState<File>();
   const [uri, setUri] = useState<string>("");
+  const [minAddress, setMintAddress] = useState<string>("");
   const [fileName, setNameFile] = useState<string>("");
   const [explorerUri, setExplorerUri] = useState<string>("");
   const [web3auth, setWeb3auth] = useState<Web3Auth | null>(null);
@@ -193,6 +194,17 @@ function Home() {
     const api = new Api();
     await api.checkToken(user?.idToken!);
   };
+  const getAllNft = async () => {
+    if (!web3auth) {
+      console.log("web3auth not initialized yet");
+      return;
+    }
+    const user = await getInfo();
+    const api = new Api();
+    const rpc = new RPC(provider!);
+    const privateKey = await rpc.getPrivateKey();
+    await api.getAllNft(user?.idToken!,privateKey);
+  };
   const getPublicKey = async () => {
     // const user=await getInfo();
     // const base64Url = user?.idToken!.split(".")[1];
@@ -212,6 +224,11 @@ function Home() {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
   }
+  const handleMintAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Mint>>>>"+e.target.value);
+    setMintAddress(e.target.value)
+    
+  }
 
   const mint = async () => {
     const user = await getInfo();
@@ -221,11 +238,22 @@ function Home() {
     console.log(privateKey);
     await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name,successMint);
   }
+  const uMint = async () => {
+    const user = await getInfo();
+    const rpc = new RPC(provider!);
+    const privateKey = await rpc.getPrivateKey();
+    const api = new Api();
+    console.log(privateKey);
+    await api.callUpdateMint(user?.idToken!, privateKey, file!, fileName, description, name,minAddress,updateMint);
+  }
 
   const successMint=async(data:any)=>{
     console.log("success",data.data);
     setExplorerUri(data.data.explorer_uri);
     setUri(data.data.nft.json.image)
+    setMintAddress(data.data.nft.address)
+  }
+  const updateMint=async(data:any)=>{
   }
   const unloggedInView = (
 
@@ -238,6 +266,7 @@ function Home() {
       <Button label={"Get Private Key"} handleClick={() => { getPrivateKey() }} />
       <Button label={"LogOut"} handleClick={() => { logout() }} />
       <Button label={"Check Token"} handleClick={() => { checkToken() }} />
+      <Button label={"Get All NFT"} handleClick={() => { getAllNft() }} />
       <Button label={"Puplic Key"} handleClick={() => { getPublicKey() }} />
       <input type="file" onChange={saveFile} />
       <label>Description</label>
@@ -247,6 +276,10 @@ function Home() {
       <Button label="mint" handleClick={() => { mint() }} />
       <p>{explorerUri}</p>
       <img src={uri}/>
+
+      <input type="text" onChange={handleMintAddress} />
+      <Button label={"Update Mint"} handleClick={() => { uMint() }} />
+
     </div>
   );
   return (
