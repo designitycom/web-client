@@ -27,6 +27,7 @@ function Home() {
   );
   const [description, setDescription] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const [collectionMint, setcollectionMint] = useState<string>("");
   useEffect(() => {
     const init = async () => {
       try {
@@ -224,6 +225,9 @@ function Home() {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value)
   }
+  const handleCollectionMintChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setcollectionMint(e.target.value)
+  }
   const handleMintAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("Mint>>>>"+e.target.value);
     setMintAddress(e.target.value)
@@ -236,7 +240,7 @@ function Home() {
     const privateKey = await rpc.getPrivateKey();
     const api = new Api();
     console.log(privateKey);
-    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name,successMint);
+    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name,collectionMint,successMint);
   }
   const uMint = async () => {
     const user = await getInfo();
@@ -273,6 +277,8 @@ function Home() {
       <input type="text" onChange={handleDescriptionChange} />
       <label>Name</label>
       <input type="text" onChange={handleNameChange} />
+      <label>collection mint</label>
+      <input type="text" onChange={handleCollectionMintChange} />
       <Button label="mint" handleClick={() => { mint() }} />
       <p>{explorerUri}</p>
       <img src={uri}/>

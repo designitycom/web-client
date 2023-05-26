@@ -46,7 +46,7 @@ export default class Api {
       return ["ok"];
    }
 
-   callMint = async (idToken: string, privateKey: string, file: File, fileName: string, description: string, name: string, callBack: (data: JSON) => {}): Promise<string[]> => {
+   callMint = async (idToken: string, privateKey: string, file: File, fileName: string, description: string, name: string,collectionMint: string, callBack: (data: JSON) => {}): Promise<string[]> => {
       console.log("start check login:" + idToken);
       const formData = new FormData();
       formData.append("file", file);
@@ -55,6 +55,7 @@ export default class Api {
       formData.append("privateKey", privateKey);
       formData.append("description", description);
       formData.append("name", name);
+      formData.append("collectionMint", collectionMint);
       formData.append("workId", nanoid())
       fetch('http://209.38.228.176:5000/api/test/mint', {
          method: 'POST',
