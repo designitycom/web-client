@@ -9,9 +9,12 @@ import { SlopeAdapter } from "@web3auth/slope-adapter";
 import { SolanaWalletConnectorPlugin } from "@web3auth/solana-wallet-connector-plugin";
 import RPC from "../../utils/solanaRPC";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
-import Api from "../../services/api";
-const clientId =
-  "BEssGOFZDUSOPpzXZvdSQ02nXBQUCA13EQ7pIIdPfnichG55JR8kU0pU5zRGo-xJuza0SUl5Gx9e2PXOuvMz1og"; // get from https://dashboard.web3auth.io
+import { callMint, callMintCollection, callUpdateMint, checkToken, getAllNft } from "../../services/api";
+const clientId:string =process.env.REACT_APP_CLIENT_ID!; 
+const chainType:string=process.env.REACT_APP_CHAIN_TYPE!;
+const rpcTarget:string=process.env.REACT_APP_RPC_TARGET!;
+const web3authNetwork:any=process.env.REACT_APP_WEB3AUTH_NETWORK!;
+const appLogo:any=process.env.REACT_APP_APP_LOGO!;
 
 
 function Home() {
@@ -35,15 +38,15 @@ function Home() {
           clientId,
           chainConfig: {
             chainNamespace: CHAIN_NAMESPACES.SOLANA,
-            chainId: "0x3", // Please use 0x1 for Mainnet, 0x2 for Testnet, 0x3 for Devnet
-            rpcTarget: "https://api.devnet.solana.com", // This is the public RPC we have added, please pass on your own endpoint while creating an app
+            chainId: chainType, // Please use 0x1 for Mainnet, 0x2 for Testnet, 0x3 for Devnet
+            rpcTarget: rpcTarget, // This is the public RPC we have added, please pass on your own endpoint while creating an app
           },
           uiConfig: {
             theme: 'dark',
             // loginMethodsOrder:['email_passwordless','google'],
-            appLogo: 'https://global-uploads.webflow.com/61cdf3c5e0b8155f19e0105b/61d33553e398cf5f9cc90bf7_webclip.png'
+            appLogo: appLogo
           },
-          web3AuthNetwork: "testnet",
+          web3AuthNetwork:web3authNetwork,
         });
 
         // adding solana wallet connector plugin
@@ -186,25 +189,23 @@ function Home() {
     await web3auth.logout();
     setProvider(null);
   };
-  const checkToken = async () => {
+  const handleCheckToken = async () => {
     if (!web3auth) {
       console.log("web3auth not initialized yet");
       return;
     }
     const user = await getInfo();
-    const api = new Api();
-    await api.checkToken(user?.idToken!);
+    await checkToken(user?.idToken!);
   };
-  const getAllNft = async () => {
+  const handleGetAllNft = async () => {
     if (!web3auth) {
       console.log("web3auth not initialized yet");
       return;
     }
     const user = await getInfo();
-    const api = new Api();
     const rpc = new RPC(provider!);
     const privateKey = await rpc.getPrivateKey();
-    await api.getAllNft(user?.idToken!,privateKey);
+    await getAllNft(user?.idToken!,privateKey);
   };
   const getPublicKey = async () => {
     // const user=await getInfo();
@@ -238,17 +239,22 @@ function Home() {
     const user = await getInfo();
     const rpc = new RPC(provider!);
     const privateKey = await rpc.getPrivateKey();
-    const api = new Api();
     console.log(privateKey);
-    await api.callMint(user?.idToken!, privateKey, file!, fileName, description, name,collectionMint,successMint);
+    await callMint(user?.idToken!, privateKey, file!, fileName, description, name,collectionMint,successMint);
+  }
+  const mintCollection = async () => {
+    const user = await getInfo();
+    const rpc = new RPC(provider!);
+    const privateKey = await rpc.getPrivateKey();
+    console.log(privateKey);
+    await callMintCollection(user?.idToken!, privateKey, file!, fileName, description, name,collectionMint,successMint);
   }
   const uMint = async () => {
     const user = await getInfo();
     const rpc = new RPC(provider!);
     const privateKey = await rpc.getPrivateKey();
-    const api = new Api();
     console.log(privateKey);
-    await api.callUpdateMint(user?.idToken!, privateKey, file!, fileName, description, name,minAddress,updateMint);
+    await callUpdateMint(user?.idToken!, privateKey, file!, fileName, description, name,minAddress,updateMint);
   }
 
   const successMint=async(data:any)=>{
@@ -269,14 +275,15 @@ function Home() {
       <Button label={"Get Account"} handleClick={() => { getAccounts() }} />
       <Button label={"Get Private Key"} handleClick={() => { getPrivateKey() }} />
       <Button label={"LogOut"} handleClick={() => { logout() }} />
-      <Button label={"Check Token"} handleClick={() => { checkToken() }} />
-      <Button label={"Get All NFT"} handleClick={() => { getAllNft() }} />
+      <Button label={"Check Token"} handleClick={() => { handleCheckToken() }} />
+      <Button label={"Get All NFT"} handleClick={() => { handleGetAllNft() }} />
       <Button label={"Puplic Key"} handleClick={() => { getPublicKey() }} />
       <input type="file" onChange={saveFile} />
       <label>Description</label>
       <input type="text" onChange={handleDescriptionChange} />
       <label>Name</label>
       <input type="text" onChange={handleNameChange} />
+      <Button label="mint Collection" handleClick={() => { mintCollection() }} />
       <label>collection mint</label>
       <input type="text" onChange={handleCollectionMintChange} />
       <Button label="mint" handleClick={() => { mint() }} />
