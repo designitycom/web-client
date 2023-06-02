@@ -122,4 +122,27 @@ const serverAddress:string=process.env.REACT_APP_SERVER_ADDRESS!;
          });
       return ["ok"];
    }
+   export async function checkingEmail(email: string, callBack: (data: string) => {}): Promise<string[]> {
+      console.log("email:" + email);
+      const formData = new FormData();
+      formData.append("email", email);
+      fetch(serverAddress+'/api/test/checkingEmail', {
+         method: 'POST',
+         body: formData,
+      })
+         .then((response) => response.json())
+         .then((data) => {
+            console.log(data.data);
+            if(data.data){
+               callBack(data.data.name);
+            }else{
+               callBack("");
+            }
+            // Handle data
+         })
+         .catch((err) => {
+            console.log(err.message);
+         });
+      return ["ok"];
+   }
 

@@ -9,7 +9,7 @@ import { SlopeAdapter } from "@web3auth/slope-adapter";
 import { SolanaWalletConnectorPlugin } from "@web3auth/solana-wallet-connector-plugin";
 import RPC from "../../utils/solanaRPC";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
-import { callMint, callMintCollection, callUpdateMint, checkToken, getAllNft } from "../../services/api";
+import { callMint, callMintCollection, callUpdateMint, checkToken, checkingEmail, getAllNft } from "../../services/api";
 const clientId:string =process.env.REACT_APP_CLIENT_ID!; 
 const chainType:string=process.env.REACT_APP_CHAIN_TYPE!;
 const rpcTarget:string=process.env.REACT_APP_RPC_TARGET!;
@@ -19,6 +19,9 @@ const appLogo:any=process.env.REACT_APP_APP_LOGO!;
 
 function Home() {
 
+  const [status, setStatus] = useState<string>("Loading");
+  const [state, setState] = useState<Number>(0);
+  const [email, setEmail] = useState<string>("");
   const [file, setFile] = useState<File>();
   const [uri, setUri] = useState<string>("");
   const [minAddress, setMintAddress] = useState<string>("");
@@ -134,6 +137,7 @@ function Home() {
         });
         if (web3auth.provider) {
           setProvider(web3auth.provider);
+          checkEmail();
         }
       } catch (error) {
         console.error(error);
@@ -141,6 +145,7 @@ function Home() {
     };
 
     init();
+    checkEmail();
   }, []);
 
   const login = async () => {
@@ -150,14 +155,50 @@ function Home() {
     }
     const web3authProvider = await web3auth.connect();
     setProvider(web3authProvider);
+    checkEmail();
   };
+  const checkEmail = async () => {
+    if (!web3auth) {
+      console.log("web3auth not initialized yet");
+      return;
+    }
+    setName("");
+    const user = await web3auth.getUserInfo();
+    console.log(user.email);
+    setEmail(user.email!);
+    setStatus("Checking...");
+    setState(1);
+    await checkingEmail(email,setStateAuthorize)
+  }
+
+  const setStateAuthorize=async (name:string)=>{
+    if (!web3auth) {
+      console.log("web3auth not initialized yet");
+      return;
+    }
+   console.log("result of checking email:",name);
+   if(name!=""){
+
+    setState(2);
+    setName(name);
+    setStatus("Authorized:");
+
+   }else{
+    setState(0);
+    setName(name);
+    setStatus("No Authorize");
+    
+    await web3auth.logout();
+    setProvider(null);
+   }
+  }
   const getInfo = async () => {
     if (!web3auth) {
       console.log("web3auth not initialized yet");
       return;
     }
     const user = await web3auth.getUserInfo();
-    console.log(user.idToken);
+    console.log(user);
     return user;
   }
 
@@ -271,7 +312,9 @@ function Home() {
   );
   const loggedInView = (
     <div>
-      <Button label={"Get Info"} handleClick={() => { getInfo() }} />
+    <Button label={"Get Info"} handleClick={() => { getInfo() }} />
+    <p>{status+' '+name}</p>
+      <Button label={"Check Email"} handleClick={() => { checkEmail() }} />
       <Button label={"Get Account"} handleClick={() => { getAccounts() }} />
       <Button label={"Get Private Key"} handleClick={() => { getPrivateKey() }} />
       <Button label={"LogOut"} handleClick={() => { logout() }} />
@@ -295,9 +338,20 @@ function Home() {
 
     </div>
   );
+  let resultView;
+  console.log(provider,state);
+  if(provider){
+    if(state==1){
+      resultView=<p>{status}</p>
+    }else{
+      resultView=loggedInView;
+    }
+  }else{
+    resultView=unloggedInView;
+  }
   return (
     <div className="App">
-      {provider ? loggedInView : unloggedInView}
+      {resultView}
     </div>
   );
 }
