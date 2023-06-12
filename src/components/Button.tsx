@@ -1,5 +1,4 @@
 import { Component, ReactNode } from "react";
-import PropTypes from 'prop-types'
 
 class Button extends Component<{label:string,handleClick:()=>void},{}>{
     
