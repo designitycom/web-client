@@ -2,7 +2,28 @@ body{
     min-width:100wh;
     min-height: 100vh;
 }
+.hidden{
+  display: none;
+}
+.nft_box{
+  display: flex;
+  flex-direction: row;
+  box-shadow: 5px 5px 8px #ccc;
+  border:1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
 
+.nft_info_box{
+  display: flex;
+  flex-direction: column;
+}
+.webpack-dev-server-client-overlay-div{
+  display: none!important;
+}
+.nft_box img{
+  width: 100px;
+}
 .w3a-header__logo > img {
   width: 100px !important;
 }
