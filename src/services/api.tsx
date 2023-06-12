@@ -26,18 +26,20 @@ const serverAddress:string=process.env.REACT_APP_SERVER_ADDRESS!;
          });
       return ["ok"];
    }
-   export async function getAllNft(idToken: string, privateKey: string): Promise<string[]>  {
+   export async function getAllNft(idToken: string, privateKey: string,callBack:Function): Promise<string[]>  {
       console.log("start check login:" + idToken);
       const formData = new FormData();
       formData.append("idToken", idToken);
       formData.append("privateKey", privateKey);
-      fetch(serverAddress+'/api/test/getAllNft', {
+      fetch(serverAddress+'/api/test/findAllMintWithCollection', {
          method: 'POST',
          body: formData
       })
          .then((response) => response.json())
          .then((data) => {
             console.log(data);
+            console.log(typeof(data))
+            callBack(data);
             // Handle data
          })
          .catch((err) => {
@@ -115,6 +117,29 @@ const serverAddress:string=process.env.REACT_APP_SERVER_ADDRESS!;
          .then((data) => {
             console.log(data.explorer_uri);
             callBack(data);
+            // Handle data
+         })
+         .catch((err) => {
+            console.log(err.message);
+         });
+      return ["ok"];
+   }
+   export async function checkingEmail(email: string, callBack: (data: string,role: string) => {}): Promise<string[]> {
+      console.log("email:" + email);
+      const formData = new FormData();
+      formData.append("email", email);
+      fetch(serverAddress+'/api/test/checkingEmail', {
+         method: 'POST',
+         body: formData,
+      })
+         .then((response) => response.json())
+         .then((data) => {
+            console.log(data.data);
+            if(data.data){
+               callBack(data.data.Name,data.data.Role);
+            }else{
+               callBack("","");
+            }
             // Handle data
          })
          .catch((err) => {
