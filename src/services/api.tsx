@@ -73,6 +73,30 @@ const serverAddress:string=process.env.REACT_APP_SERVER_ADDRESS!;
          });
       return ["ok"];
    }
+   export async function callDefaultMint(idToken: string, privateKey: string, description: string, name: string,role: string, callBack: (data: JSON) => {}): Promise<string[]>  {
+      console.log("start check login:" + idToken);
+      const formData = new FormData();
+      formData.append("idToken", idToken);
+      formData.append("privateKey", privateKey);
+      formData.append("description", description);
+      formData.append("name", name);
+      formData.append("role", role);
+      formData.append("workId", nanoid())
+      fetch(serverAddress+'/api/test/defaultMint', {
+         method: 'POST',
+         body: formData,
+      })
+         .then((response) => response.json())
+         .then((data) => {
+            console.log(data.explorer_uri);
+            callBack(data);
+            // Handle data
+         })
+         .catch((err) => {
+            console.log(err.message);
+         });
+      return ["ok"];
+   }
    export async function callMintCollection(idToken: string, privateKey: string, file: File, fileName: string, description: string, name: string,collectionMint: string, callBack: (data: JSON) => {}): Promise<string[]> {
       console.log("start check login:" + idToken);
       const formData = new FormData();
@@ -138,7 +162,7 @@ const serverAddress:string=process.env.REACT_APP_SERVER_ADDRESS!;
             if(data.data){
                callBack(data.data.Name,data.data.Role);
             }else{
-               callBack("","");
+               callBack("guest user","guest");
             }
             // Handle data
          })
