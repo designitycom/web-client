@@ -25,6 +25,7 @@ export interface Nft {
   export interface Json {
     name: string
     description: string
+    role: string
     image: string
   }
   
