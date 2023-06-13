@@ -45,7 +45,7 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
-    "serve": "static-server -p 8082 build"
+    "serve": "static-server -p 8082 -i index.html build"
   },
   "eslintConfig": {
     "extends": [
