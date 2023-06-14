@@ -1,4 +1,5 @@
 const webpack = require("webpack");
+require('dotenv/config');
 
 module.exports = function override(config) {
   const fallback = config.resolve.fallback || {};
