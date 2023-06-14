@@ -9,7 +9,7 @@ import { SlopeAdapter } from "@web3auth/slope-adapter";
 import { SolanaWalletConnectorPlugin } from "@web3auth/solana-wallet-connector-plugin";
 import RPC from "../../utils/solanaRPC";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
-import { callDefaultMint, callMint, callMintCollection, callUpdateMint, checkToken, checkingEmail, getAllNft } from "../../services/api";
+import { callDefaultMint, callMint, callMintCollection, callUpdateDefaultMint, callUpdateMint, checkToken, checkingEmail, getAllNft, getBalance } from "../../services/api";
 import Hidden from "../../components/Hidden";
 import { Nft } from "../../models/Nft";
 const clientId: string = process.env.REACT_APP_CLIENT_ID!;
@@ -24,6 +24,7 @@ function Home() {
   const [status, setStatus] = useState<string>("Loading");
   const [state, setState] = useState<Number>(0);
   const [email, setEmail] = useState<string>("");
+  const [balance, setBalance] = useState<string>("");
   const [file, setFile] = useState<File>();
   const [uri, setUri] = useState<string>("");
   const [myNfts, setMyNfts] = useState<Nft[]>([]);
@@ -155,7 +156,7 @@ function Home() {
     if (web3auth) {
       login();
     }
-  }, [web3auth,provider]);
+  }, [web3auth, provider]);
 
   useEffect(() => {
     if (provider) {
@@ -164,10 +165,11 @@ function Home() {
   }, [provider]);
 
   useEffect(() => {
-    if (userName!=""&&userRole!="") {
+    if (userName != "" && userRole != "") {
       handleGetAllNft();
+      handleGetBalance();
     }
-  }, [userName,userRole]);
+  }, [userName, userRole]);
   const login = async () => {
     console.log("login>>>");
     if (!web3auth) {
@@ -260,6 +262,19 @@ function Home() {
     setMyNfts([]);
     setUserRole("");
   };
+  const handleGetBalance = async () => {
+    if (!provider) {
+      console.log("provider not initialized yet");
+      return;
+    }
+    const rpc = new RPC(provider);
+    const privateKey = await rpc.getPrivateKey();
+    await getBalance(privateKey, setBalanceCallBack);
+  }
+  const setBalanceCallBack = (balance: string) => {
+    console.log("Balance is:", balance);
+    setBalance("balance is:" + balance)
+  }
   const handleCheckToken = async () => {
     if (!web3auth) {
       console.log("web3auth not initialized yet");
@@ -282,15 +297,20 @@ function Home() {
     console.log(">>>>>>>");
     setMyNfts(nfts);
     console.log(nfts);
-    console.log(typeof(nfts.length));
-    const c=0;
-    if(nfts.length==c){
-      defaultMint(userName,userRole);
-    }else{
-      const firstNft=nfts[c];
-      setUserRole(firstNft.json.role);
-      console.log(firstNft);
-    }  
+    console.log(typeof (nfts.length));
+    const c = 0;
+    if (nfts.length == c) {
+      defaultMint(userName, userRole);
+    } else {
+      const firstNft = nfts[c];
+      if (firstNft.json.role == userRole) {
+        setStatus("");
+        setUserRole(firstNft.json.role);
+        console.log(firstNft);
+      } else {
+        handleUpdateMint(firstNft);
+      }
+    }
   }
   const getPublicKey = async () => {
     // const user=await getInfo();
@@ -319,8 +339,8 @@ function Home() {
     setMintAddress(e.target.value)
 
   }
-  
-  const defaultMint = async (name:string,role:string) => {
+
+  const defaultMint = async (name: string, role: string) => {
     const user = await getInfo();
     const rpc = new RPC(provider!);
     const privateKey = await rpc.getPrivateKey();
@@ -328,9 +348,9 @@ function Home() {
     setName(userName);
     setStatus("start mint");
     setDescription("init token for user");
-    await callDefaultMint(user?.idToken!, privateKey, "init token for user", name,role, successDefaultMint);
+    await callDefaultMint(user?.idToken!, privateKey, "init token for user", name, role, successDefaultMint);
   }
-  const successDefaultMint=async ()=>{
+  const successDefaultMint = async () => {
     setStatus("end mint");
     await handleGetAllNft();
   }
@@ -357,11 +377,25 @@ function Home() {
     await callUpdateMint(user?.idToken!, privateKey, file!, fileName, description, name, minAddress, updateMint);
   }
 
+
+  const handleUpdateMint = async (mynft: Nft) => {
+    const user = await getInfo();
+    const rpc = new RPC(provider!);
+    const privateKey = await rpc.getPrivateKey();
+    console.log(privateKey);
+    setStatus("start update token ");
+    await callUpdateDefaultMint(privateKey, "init token for user", userName, userRole, mynft.address, callBackUpdateMint);
+  }
+
   const successMint = async (data: any) => {
     console.log("success", data.data);
     // setExplorerUri(data.data.explorer_uri);
     // setUri(data.data.nft.json.image)
     // setMintAddress(data.data.nft.address)
+  }
+  const callBackUpdateMint = async (data: any) => {
+    setStatus("end update token ");
+    await handleGetAllNft();
   }
   const updateMint = async (data: any) => {
   }
@@ -394,12 +428,13 @@ function Home() {
   const loggedInView = (
     <div>
       <p>{status + ' ' + userName + ":" + userRole}</p>
+      <p>{balance}</p>
       {/* <Button label={"Check Email"} handleClick={() => { checkEmail() }} /> */}
       <Button label={"LogOut"} handleClick={() => { logout() }} />
       {/* <Button label={"Get Private Key"} handleClick={() => { getPrivateKey() }} /> */}
-     {/* <Button label={"Get All NFT"} handleClick={() => { handleGetAllNft() }} /> */}
+      {/* <Button label={"Get All NFT"} handleClick={() => { handleGetAllNft() }} /> */}
 
-{/*  
+      {/*  
       <input type="file" onChange={saveFile} />
       <label>Description</label>
       <input type="text" onChange={handleDescriptionChange} />
@@ -423,21 +458,21 @@ function Home() {
       resultButton.push(
         <Button label="guest button two" handleClick={() => { }} />
       );
-    }else if(userRole=="admin"){
+    } else if (userRole == "admin") {
       resultButton.push(
         <Button label="Admin button one" handleClick={() => { }} />
       );
       resultButton.push(
         <Button label="Admin button two" handleClick={() => { }} />
       );
-    }else if(userRole=="cd"){
+    } else if (userRole == "cd") {
       resultButton.push(
         <Button label="CD button one" handleClick={() => { }} />
       );
       resultButton.push(
         <Button label="CD button two" handleClick={() => { }} />
       );
-    }else if(userRole=="creator"){
+    } else if (userRole == "creator") {
       resultButton.push(
         <Button label="Creator button one" handleClick={() => { }} />
       );
@@ -465,8 +500,8 @@ function Home() {
       {resultView}
 
       {myNfts.map((nft, index) => {
-        
-        return ( 
+
+        return (
           <div>
             <a className="nft_box" target="_blank" href={'https://explorer.solana.com/address/' + nft.address + '?cluster=devnet'}>
               <img src={nft.json.image} />
