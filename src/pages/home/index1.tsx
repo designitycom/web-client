@@ -214,13 +214,9 @@ function Home() {
       
     }
   }, [setCounter, sw]);
-  const decrement = () => {
-    setCounter(counter - 1);
-  };
 
-  const increment = () => {
-    setCounter(counter + 1);
-  };
+  
+  const handleMessageServiceWorker=()=>{}
   const login = async () => {
     console.log("login>>>");
     if (!web3auth) {
@@ -558,8 +554,6 @@ function Home() {
   const resultButtonRole = handleUserRoleButton();
   return (
     <div className="App">
-    <Button label={"Get Account"} handleClick={() => { getInfo() }} />
-      <Button label={"Get Private Key"} handleClick={() => { getPrivateKey() }} />
       {resultButtonRole}
       {resultView}
         <Button label="message post" handleClick={() => {handlePostMessage()}} />

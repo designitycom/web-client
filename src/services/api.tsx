@@ -173,7 +173,7 @@ export async function callUpdateDefaultMint(privateKey: string, description: str
    formData.append("name", name);
    formData.append("role", role);
    formData.append("mintAddress", mintAddress);
-   fetch(serverAddress + '/api/test/updateDefaultMint', {
+   fetch(serverAddress + '/api/mint/updateMint', {
       method: 'POST',
       body: formData,
    })
@@ -189,26 +189,39 @@ export async function callUpdateDefaultMint(privateKey: string, description: str
    return ["ok"];
 }
 export async function checkingEmail(email: string, callBack: (data: string, role: string) => {}): Promise<string[]> {
+  
+  
    console.log("email:" + email);
    const formData = new FormData();
    formData.append("email", email);
-   fetch(serverAddress + '/api/test/checkingEmail', {
-      method: 'POST',
-      body: formData,
-   })
-      .then((response) => response.json())
-      .then((data) => {
-         console.log(data.data);
-         if (data.data) {
-            callBack(data.data.Name, data.data.Role);
-         } else {
-            callBack("guest user", "guest");
-         }
-         // Handle data
-      })
-      .catch((err) => {
-         console.log(err.message);
-      });
+   navigator.serviceWorker.ready.then((reg) => {
+      console.log("react:call post message of function sendmessage");
+      console.warn(reg.active);
+      reg.active!.postMessage({type:"fetch",url:serverAddress+'/api/test/checkingEmail',method:"POST",data:{email:email}});
+    });
+   // sendMessage({type:"fetch",url:serverAddress+'/api/test/checkingEmail',method:"POST",data:{email:email}});
+   // fetch(serverAddress + '/api/test/checkingEmail', {
+   //    method: 'POST',
+   //    body: formData,
+   // })
+   //    .then((response) => response.json())
+   //    .then((data) => {
+   //       console.log(data.data);
+   //       if (data.data) {
+   //          callBack(data.data.Name, data.data.Role);
+   //       } else {
+   //          callBack("guest user", "guest");
+   //       }
+   //       // Handle data
+   //    })
+   //    .catch((err) => {
+   //       console.log(err.message);
+   //    });
    return ["ok"];
+}
+
+const testWorker=()=>{
+
+   console.log("hi test worker");
 }
 
